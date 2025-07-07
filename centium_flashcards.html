@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centium Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Desktop Layout */
+        .desktop-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Mobile Layout */
+        .mobile-container {
+            display: none;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .mobile-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #1e7e34;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .random-btn {
+            background: #ffc107;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .random-btn:hover {
+            background: #e0a800;
+        }
+
+        .mobile-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        /* Card Styles */
+        .card {
+            width: 96px;
+            height: 96px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .card.hidden {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+            color: white;
+        }
+
+        .card.revealed {
+            background-color: white;
+        }
+
+        .card-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-number {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            color: black;
+            text-shadow:
+                -1px -1px 0 #fff,
+                 1px -1px 0 #fff,
+                -1px  1px 0 #fff,
+                 1px  1px 0 #fff;
+            z-index: 2;
+        }
+
+        .card.hidden .card-number {
+            color: white;
+            text-shadow: none;
+        }
+
+        .question-mark {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .card-word {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 0 8px #000, 0 0 4px #000, 2px 2px 4px #000;
+            padding: 0 2px;
+            line-height: 1.2;
+        }
+
+        .card-word .main-word {
+            display: block;
+            font-size: 14px;
+        }
+
+        .card-word .paren {
+            display: block;
+            font-size: 10px;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .desktop-grid {
+                display: none;
+            }
+
+            .mobile-container {
+                display: block;
+            }
+
+            .card {
+                width: 120px;
+                height: 120px;
+            }
+
+            .card-number {
+                font-size: 16px;
+            }
+
+            .question-mark {
+                font-size: 56px;
+            }
+
+            .card-word .main-word {
+                font-size: 16px;
+            }
+
+            .card-word .paren {
+                font-size: 12px;
+            }
+        }
+
+        .position-indicator {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card.placeholder {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Centium Flashcards</h1>
+
+    <div class="controls">
+        <button class="btn" onclick="showAllCards()">Révéler Tout</button>
+        <button class="btn" onclick="hideAllCards()">Cacher Tout</button>
+        <button class="btn" onclick="resetCards()">Reset</button>
+    </div>
+
+    <!-- Desktop Layout -->
+    <div class="desktop-grid" id="desktopGrid"></div>
+
+    <!-- Mobile Layout -->
+    <div class="mobile-container">
+        <div class="position-indicator" id="positionIndicator">Position: (0, 0)</div>
+
+        <div class="mobile-nav">
+            <button class="nav-btn" id="leftBtn" onclick="moveGrid('left')">←</button>
+            <button class="nav-btn" id="upBtn" onclick="moveGrid('up')">↑</button>
+            <button class="random-btn" onclick="randomPosition()">Random</button>
+            <button class="nav-btn" id="downBtn" onclick="moveGrid('down')">↓</button>
+            <button class="nav-btn" id="rightBtn" onclick="moveGrid('right')">→</button>
+        </div>
+
+        <div class="mobile-grid" id="mobileGrid"></div>
+    </div>
+
+    <script>
+        // Centium data
+        const centiumData = {
+            "00": "OASIS", "01": "SONDE", "02": "ZEN (MAITRE ZEN)", "03": "SAUMON", "04": "SŒUR (BONNE SŒUR)",
+            "05": "SEL", "06": "SOUCHE", "07": "SKI", "08": "SOFA", "09": "ESPION",
+            "10": "TASSE", "11": "TÊTE", "12": "TONNEAU", "13": "DIAMANT", "14": "TAUREAU",
+            "15": "ÉTOILE", "16": "DOUCHE", "17": "TICKET", "18": "DAUPHIN", "19": "TAUPE",
+            "20": "NOISETTE", "21": "NATTE", "22": "NAINE", "23": "NEM", "24": "HONNEUR",
+            "25": "NOUILLES", "26": "NICHE", "27": "NOUGAT", "28": "NAVET", "29": "NAPPE",
+            "30": "MAISON", "31": "MOUTON", "32": "MOINE", "33": "MOMIE", "34": "MARIN",
+            "35": "MOULIN", "36": "MOUCHE", "37": "MAKI", "38": "MAFIEUX", "39": "MYOPE",
+            "40": "ROSE", "41": "RATEAU", "42": "REINE", "43": "RAME", "44": "RER",
+            "45": "OREILLE", "46": "RUCHE", "47": "REQUIN", "48": "RÊVE", "49": "ROBOT",
+            "50": "LASSO", "51": "LUTIN", "52": "LUNE", "53": "LAMA", "54": "LARD",
+            "55": "LILA", "56": "LUGE", "57": "LAC", "58": "LAVE", "59": "LAPIN",
+            "60": "CHAISE", "61": "CHÂTEAU", "62": "CHAINE", "63": "CHAMEAU", "64": "CHARIOT",
+            "65": "CHALET", "66": "JUGE", "67": "CHÈQUE", "68": "CHEF (CUISTOT)", "69": "CHAPEAU",
+            "70": "CAISSE", "71": "COUTEAU", "72": "CANON", "73": "CAMION", "74": "CRAIE",
+            "75": "CLÉ", "76": "CAGE", "77": "CAKE", "78": "CAFÉ", "79": "CUBE",
+            "80": "FUSÉE", "81": "FÊTE", "82": "FANS", "83": "FUMÉE", "84": "FORET",
+            "85": "FILET", "86": "VACHE", "87": "PHOQUE", "88": "FÈVE", "89": "VAPOTEUSE",
+            "90": "POISSON", "91": "BÂTON", "92": "BONNET", "93": "POMME", "94": "POIRE",
+            "95": "PELLE", "96": "PÊCHE", "97": "BAGUE", "98": "PAVÉ", "99": "PAPE"
+        };
+
+        // State
+        let cardStates = {}; // true = revealed, false/undefined = hidden
+        let mobileCenter = { row: 0, col: 0 }; // Center position for mobile 3x3 grid
+
+        // Initialize card states
+        for (let i = 0; i < 100; i++) {
+            const num = i.toString().padStart(2, '0');
+            cardStates[num] = false;
+        }
+
+        function splitWord(word) {
+            if (word.includes('(') && word.includes(')')) {
+                const parts = word.split('(');
+                const mainWord = parts[0].trim();
+                const parenPart = '(' + parts[1];
+                return { main: mainWord, paren: parenPart };
+            }
+            return { main: word, paren: null };
+        }
+
+        function createCard(num, isDesktop = true) {
+            const word = centiumData[num];
+            const { main, paren } = splitWord(word);
+            const isRevealed = cardStates[num];
+
+            const card = document.createElement('div');
+            card.className = `card ${isRevealed ? 'revealed' : 'hidden'}`;
+            card.dataset.num = num;
+
+            if (isRevealed) {
+                card.style.backgroundImage = `url('./img/${num}.png')`;
+            }
+
+            card.innerHTML = `
+                <div class="card-content">
+                    <div class="card-number">${num}</div>
+                    ${isRevealed ? '' : '<div class="question-mark">?</div>'}
+                    ${isRevealed ? `<div class="card-word">
+                        <span class="main-word">${main}</span>
+                        ${paren ? `<span class="paren">${paren}</span>` : ''}
+                    </div>` : ''}
+                </div>
+            `;
+
+            card.addEventListener('click', () => toggleCard(num));
+            return card;
+        }
+
+        function toggleCard(num) {
+            cardStates[num] = !cardStates[num];
+            updateAllDisplays();
+        }
+
+        function updateAllDisplays() {
+            updateDesktopGrid();
+            updateMobileGrid();
+        }
+
+        function updateDesktopGrid() {
+            const grid = document.getElementById('desktopGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < 100; i++) {
+                const num = i.toString().padStart(2, '0');
+                const card = createCard(num, true);
+                grid.appendChild(card);
+            }
+        }
+
+        function updateMobileGrid() {
+            const grid = document.getElementById('mobileGrid');
+            grid.innerHTML = '';
+
+            // Create 3x3 grid centered on mobileCenter
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const row = mobileCenter.row + dr;
+                    const col = mobileCenter.col + dc;
+
+                    if (row >= 0 && row < 10 && col >= 0 && col < 10) {
+                        const idx = row * 10 + col;
+                        const num = idx.toString().padStart(2, '0');
+                        const card = createCard(num, false);
+                        grid.appendChild(card);
+                    } else {
+                        // Invisible placeholder for out-of-bounds
+                        const emptyCard = document.createElement('div');
+                        emptyCard.className = 'card placeholder';
+                        emptyCard.style.visibility = 'hidden';
+                        emptyCard.style.pointerEvents = 'none';
+                        grid.appendChild(emptyCard);
+                    }
+                }
+            }
+
+            updateNavigationButtons();
+            updatePositionIndicator();
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('leftBtn').disabled = mobileCenter.col <= 0;
+            document.getElementById('rightBtn').disabled = mobileCenter.col >= 9;
+            document.getElementById('upBtn').disabled = mobileCenter.row <= 0;
+            document.getElementById('downBtn').disabled = mobileCenter.row >= 9;
+        }
+
+        function updatePositionIndicator() {
+            const indicator = document.getElementById('positionIndicator');
+            const centerNum = (mobileCenter.row * 10 + mobileCenter.col).toString().padStart(2, '0');
+            indicator.textContent = `Position: (${mobileCenter.row}, ${mobileCenter.col}) - Carte ${centerNum}`;
+        }
+
+        function moveGrid(direction) {
+            switch (direction) {
+                case 'left':
+                    if (mobileCenter.col > 0) mobileCenter.col--;
+                    break;
+                case 'right':
+                    if (mobileCenter.col < 9) mobileCenter.col++;
+                    break;
+                case 'up':
+                    if (mobileCenter.row > 0) mobileCenter.row--;
+                    break;
+                case 'down':
+                    if (mobileCenter.row < 9) mobileCenter.row++;
+                    break;
+            }
+            updateMobileGrid();
+        }
+
+        function randomPosition() {
+            mobileCenter.row = Math.floor(Math.random() * 10);
+            mobileCenter.col = Math.floor(Math.random() * 10);
+            updateMobileGrid();
+        }
+
+        function showAllCards() {
+            for (let num in cardStates) {
+                cardStates[num] = true;
+            }
+            updateAllDisplays();
+        }
+
+        function hideAllCards() {
+            for (let num in cardStates) {
+                cardStates[num] = false;
+            }
+            updateAllDisplays();
+        }
+
+        function resetCards() {
+            hideAllCards();
+            mobileCenter = { row: 0, col: 0 };
+            updateAllDisplays();
+        }
+
+        // Initialize
+        updateAllDisplays();
+    </script>
+</body>
+</html>
